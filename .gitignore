@@ -1,0 +1,8 @@
+*/*.ova
+*/*.ovf
+*/*.qcow2
+*/*.mf
+*/*.vmdk
+
+.venv/
+site/
