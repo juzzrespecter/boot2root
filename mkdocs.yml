@@ -1,1 +1,6 @@
 site_name: boot2root memoria
+nav:
+  - Inicio: index.md
+  - Reconnaisance: reconnaisance.md
+  - Servidor: server-reconnaisance.md
+  - Bonus: bonus.md

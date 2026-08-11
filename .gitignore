@@ -6,3 +6,5 @@
 
 .venv/
 site/
+
+extract-git/
