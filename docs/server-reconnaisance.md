@@ -79,7 +79,9 @@ hal:x:9042:9042:HAL9042 Evaluation System,I am completely operational:/home/hal:
 halrev:x:999:988::/opt/hal9042/reviewer:/usr/sbin/nologin
 ```
 
-### PACO
+#### PACO
+
+Pasos para movimiento lateral `www-data` -> `paco`.
 
 ```
 find / -user paco 2>/dev/null
@@ -183,3 +185,12 @@ wil evalops
 - Extraemos la parte de la clave
 
 Existe `id_rsa_sophie.enc`
+
+
+### SOPHIE
+
+
+### OL
+
+
+### ROOT

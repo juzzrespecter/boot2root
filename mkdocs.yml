@@ -4,3 +4,6 @@ nav:
   - Reconnaisance: reconnaisance.md
   - Servidor: server-reconnaisance.md
   - Bonus: bonus.md
+
+theme:
+  name: readthedocs

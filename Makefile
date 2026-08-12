@@ -3,6 +3,7 @@ PYTHON ?= $(VENV)/bin/python
 PIP ?= $(VENV)/bin/pip
 MKDOCS ?= $(VENV)/bin/mkdocs
 TOOLBOX ?= toolbox
+PORT ?= 8000
 
 .PHONY: build
 build: $(VENV)
@@ -10,7 +11,7 @@ build: $(VENV)
 
 .PHONY: serve
 serve: $(VENV)
-	$(MKDOCS) serve
+	$(MKDOCS) serve -a 127.0.0.1:$(PORT)
 
 .PHONY: run-toolbox
 run-toolbox: toolbox
