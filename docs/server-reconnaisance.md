@@ -221,13 +221,17 @@ para obtener terminal en ol desde ssh.
 AUTH_KEYS=$(cat /tmp/sophie.auth_keys)
 ID_RSA=$(cat /tmp/sophie.id_rsa)
 
+mkdir -p ~/.ssh && chmod 700 ~/.ssh
+echo $AUTH_KEYS > ~/.ssh/authorized_keys
+echo $ID_RSA > ~/.ssh/id_rsa
+
+chmod 600 ~/.ssh/authorized_keys ~/.ssh/id_rsa
 ```
 
 ### SOPHIE
 De aquí lo único que vamos a necesitar es el archivo `authorized_keys` presente en `/home/sophie/.ssh` para realizar un movimiento lateral hacia ol.
 
 ### OL
-
-
-
-### ROOT
+```
+sudo -l
+```

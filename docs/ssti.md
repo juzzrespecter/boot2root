@@ -1,6 +1,6 @@
 ### SSTI
 
-Del reconocimiento web obtenemos el siguiente archivo con información sobre un endpoint, que nos indica que se puede activar el modo debug mediante una cabecera para interactuar con el renderer de `django`.
+Del reconocimiento web obtenemos el siguiente archivo con información sobre un endpoint, que nos indica que se puede activar el modo debug mediante una cabecera para interactuar con el renderer de `flask`.
 ```
 root@15485da21b1b:/opt/gobuster# curl 10.1.0.8:5042/static/js/debug.js
 // static/js/debug.js
