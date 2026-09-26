@@ -189,12 +189,19 @@ Tenemos la clave privada de ssh del usuario `sophie` en `/home/wil/.ssh/id_rsa_s
 La exfiltramos para intentar extraer la passphrase.
 Utilizamos `john` para extraer la passphrase en formato hash y después la rompemos lanzando una wordlist contra ella.
 
-```
+```bash
 python3 ssh2john.py /tmp/resources/id_rsa_sophie.enc > hash.txt
-/usr/bin/john --wordlist=wordlist.txt hash.txt
+/opt/john/run/john --wordlist=wordlist.txt hash.txt
 
+root@0a41d5b351e7:/tmp# /opt/john/run/john --show /tmp/hash.txt 
+/tmp/res/e:iloveyou
+
+1 password hash cracked, 0 left
 ```
 
+(Usamos una wordlist ligera ya que se nos indica que la contraseña es habitual.)
+
+Con la passphrase ya podemos usar la clave privada para acceder al usuario.
 
 #### Movimiento lateral a ol
 Buscamos archivos cuyo grupo sea `evalops`.
@@ -207,11 +214,20 @@ find / -group evalops 2>/dev/null
 Leemos que el script se ejecuta desde un `crontab` con `ol` como usuario.
 Al tener el archivo permisos de escritura por grupo, podemos ejecutar código como `ol` desde el script cada cinco minutos.
 
+Usamos la clave privada de `wil` y el archivo `authorized_keys` de `sophie`
+para obtener terminal en ol desde ssh.
+
+```
+AUTH_KEYS=$(cat /tmp/sophie.auth_keys)
+ID_RSA=$(cat /tmp/sophie.id_rsa)
+
+```
 
 ### SOPHIE
-Nada que ver aquí...
+De aquí lo único que vamos a necesitar es el archivo `authorized_keys` presente en `/home/sophie/.ssh` para realizar un movimiento lateral hacia ol.
 
 ### OL
+
 
 
 ### ROOT
