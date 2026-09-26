@@ -2,8 +2,11 @@ VENV ?= .venv
 PYTHON ?= $(VENV)/bin/python
 PIP ?= $(VENV)/bin/pip
 MKDOCS ?= $(VENV)/bin/mkdocs
-TOOLBOX ?= toolbox
-PORT ?= 8000
+DOCKER ?= docker
+TOOLBOX ?= b2r-toolbox
+
+RESOURCES ?= resources/
+ADDR ?= 127.0.0.1:8081
 
 .PHONY: build
 build: $(VENV)
@@ -11,18 +14,27 @@ build: $(VENV)
 
 .PHONY: serve
 serve: $(VENV)
-	$(MKDOCS) serve -a 127.0.0.1:$(PORT)
+	$(MKDOCS) serve -a $(ADDR)
 
 .PHONY: run-toolbox
-run-toolbox: toolbox
-	$(DOCKER) run  --entrypoint /bin/bash -it --rm -v ./resources:/mnt/resources $(TOOLBOX)
-
-toolbox:
-	@if ! docker image inspect $(TOOLBOX):latest >/dev/null 2>&1; then \
-		docker build -t $(TOOLBOX):latest -f resources/Dockerfile .; \
-	fi
+run-toolbox: $(TOOLBOX)
+	$(DOCKER) run --entrypoint /bin/bash -it --rm $(TOOLBOX)
 
 $(VENV):
 	python3 -m venv $(VENV)
 	$(PIP) install --upgrade PIP
 	$(PIP) install -r requirements.txt
+
+.PHONY: deploy
+deploy:
+	./$(RESOURCES)setup.sh
+
+.PHONY: $(TOOLBOX)
+$(TOOLBOX): .FORCE
+	@if ! docker image ls | grep -q $(TOOLBOX); then \
+		echo "Image $TOOLBOX not found. Building..."; \
+		$(DOCKER) build -t $(TOOLBOX) ./$(RESOURCES); \
+	fi
+
+.FORCE:
+

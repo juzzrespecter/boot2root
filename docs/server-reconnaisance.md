@@ -1,4 +1,4 @@
-# Reconocimiento del servdor
+# Reconocimiento del servidor
 
 ## Enumeración de puertos
 
@@ -54,14 +54,9 @@ keyboard-setup.service                 enabled enabled
 
 ```
 
-## Enumeración de procesos
-
-
-
 ## Usuarios y grupos
 
 ```bash
-
 ...
 uuidd:x:104:105::/run/uuidd:/usr/sbin/nologin
 tcpdump:x:105:107::/nonexistent:/usr/sbin/nologin
@@ -82,6 +77,7 @@ halrev:x:999:988::/opt/hal9042/reviewer:/usr/sbin/nologin
 #### PACO
 
 Pasos para movimiento lateral `www-data` -> `paco`.
+Buscamos todos los archivos cuyo propietario sea el usuario **paco**.
 
 ```
 find / -user paco 2>/dev/null

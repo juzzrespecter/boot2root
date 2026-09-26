@@ -1,8 +1,7 @@
 # Reconnaisance
 ## Host Discovery - T1595  Active Scanning 
 
-
-
+Escaneamos la red en la que se encuentra el servidor para obtener su ip.
 ```bash
 nmap -sn 10.1.0.1/28
 Starting Nmap 7.92 ( https://nmap.org ) at 2026-08-05 17:41 CEST
@@ -12,6 +11,12 @@ Nmap scan report for 10.1.0.8
 Host is up (0.00026s latency).
 Nmap done: 16 IP addresses (2 hosts up) scanned in 1.73 seconds
 ```
+
+Ya con la ip a mano, escanemamos todos los puertos para obtener posibles puntos de entrada.
+Para ello pasamos las siguientes flags a nmap:
+-**-p-** para el escaneo de todos los puertos disponibles.
+-**sV** para detectar versiones de los servicios expuestos. 
+-**sC** para ejecución de scripts de reconocimiento de nmap.
 
 ```bash
 sudo nmap -p- -sV -sC 10.1.0.8
@@ -44,6 +49,7 @@ Service Info: OS: Linux; CPE: cpe:/o:linux:linux_kernel
 Service detection performed. Please report any incorrect results at https://nmap.org/submit/ 
 
 ```
+
 
 ### Fingerprinting
 
@@ -80,7 +86,8 @@ Disallow: /secret_backup_DO_NOT_READ
 # HAL9042 reminds you: curiosity is logged. (it is always logged.)
 ```
 
-### 
+### Fuzzing
+
 
 ```bash
 root@ee0039bcd358:/opt/gobuster# ./gobuster dir -w /usr/share/wordlists/dirb/big.txt -u http://10.1.0.8:5042/ -r  -x php,txt  -t 4
