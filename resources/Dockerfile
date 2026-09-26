@@ -11,13 +11,14 @@ RUN git clone https://github.com/Oj/gobuster \
 
 # katana
 RUN CGO_ENABLED=1 go install github.com/projectdiscovery/katana/cmd/katana@latest
-RUN git clone https://github.com/drtychai/wordlists /usr/share/wordlists/
+RUN git clone --recursive https://github.com/drtychai/wordlists /usr/share/wordlists/
 
 #john jumbo
+RUN apt update && apt install libssl-dev -y
 RUN git clone https://github.com/openwall/john /opt/john \
 	&& cd /opt/john/src \
 	&& ./configure && make \
 	&& ln -s /opt/john/run/john /usr/bin \
-	&& ln -s /opt/john/run/ssh2john /usr/bin
+	&& ln -s /opt/john/run/ssh2john.py /usr/bin
 
 ENTRYPOINT ["/bin/bash"]

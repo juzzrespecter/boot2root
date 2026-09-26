@@ -18,7 +18,10 @@ serve: $(VENV)
 
 .PHONY: run-toolbox
 run-toolbox: $(TOOLBOX)
-	$(DOCKER) run --entrypoint /bin/bash -it --rm $(TOOLBOX)
+	$(DOCKER) run --entrypoint /bin/bash \
+				  -it \
+				  --rm \
+				  -v ./$(RESOURCES):/tmp/res $(TOOLBOX) 
 
 $(VENV):
 	python3 -m venv $(VENV)
@@ -32,7 +35,7 @@ deploy:
 .PHONY: $(TOOLBOX)
 $(TOOLBOX): .FORCE
 	@if ! docker image ls | grep -q $(TOOLBOX); then \
-		echo "Image $TOOLBOX not found. Building..."; \
+		echo "Image $$(TOOLBOX) not found. Building..."; \
 		$(DOCKER) build -t $(TOOLBOX) ./$(RESOURCES); \
 	fi
 

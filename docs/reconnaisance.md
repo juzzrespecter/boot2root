@@ -244,8 +244,9 @@ http://10.1.0.8:5042/appeal
 
 ```
 
-### Lo de .git
+## Lo de .git
 
+El servidor deja un repositorio **git** expuesto, lo recuperamos.
 ```bash
 
  wget -r -np -nH --cut-dirs=1 http://10.1.0.8:5042/.git/
@@ -282,32 +283,10 @@ ENV = "development"
 
 La variable `ADMIN_TOKEN` nos servirá para obtener shell como `www-data` a través de **LFI -> RCE**.
 
-### Primera ruta
+## Primera ruta - LFI -> RCE
 
-```
-root@15485da21b1b:/opt/gobuster# curl 10.1.0.8:5042/api/debug
-HAL9042 debug endpoint.
-usage: ?file=<path>  |  ?cmd=<command>&token=<maintenance_token>
-```
+[Writeup de la primera ruta de acceso a servidor](./rce.md)
 
+## Segunda ruta - SSTI semiblind
 
-### Segunda ruta
-
-```
-root@15485da21b1b:/opt/gobuster# curl 10.1.0.8:5042/api/debug
-HAL9042 debug endpoint.
-usage: ?file=<path>  |  ?cmd=<command>&token=<maintenance_token>
-root@15485da21b1b:/opt/gobuster# curl 10.1.0.8:5042/static/js/debug.js
-// static/js/debug.js
-// paco: internal debug helper. NEVER linked from any template — leftover.
-// (found via the exposed .git repo or by dirbusting /static/js/)
-window.HAL_DEBUG = {
-    // Setting this request header switches /evaluate into verbose render mode,
-    // so the Jinja2-rendered output is returned instead of the opaque ack.
-    debug_header: "X-Debug-Render",
-    schema_endpoint: "/api/internal/schema",
-    // legacy maintenance console — disabled in the UI, still on the server
-    debug_endpoint: "/api/debug",
-    note: "X-Debug-Render: true  ->  see what the template engine actually rendered"
-};
-```
+[Writeup de la segunda ruta de acceso a servidor](./ssti.md)
