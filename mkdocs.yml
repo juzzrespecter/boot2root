@@ -2,6 +2,8 @@ site_name: boot2root memoria
 nav:
   - Inicio: index.md
   - Reconnaisance: reconnaisance.md
+  - 'Exploit: LFI - RCE': rce.md
+  - 'Exploit: SSTI': ssti.md
   - Servidor: server-reconnaisance.md
   - Bonus: bonus.md
 

@@ -8,6 +8,9 @@ TOOLBOX ?= b2r-toolbox
 RESOURCES ?= resources/
 ADDR ?= 127.0.0.1:8081
 
+.PHONY: all
+all: serve
+
 .PHONY: build
 build: $(VENV)
 	$(MKDOCS) build --strict
