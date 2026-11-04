@@ -1,7 +1,7 @@
 # Reconnaisance
-## Host Discovery - T1595  Active Scanning 
+### [Host Discovery - T1595  Active Scanning](https://attack.mitre.org/techniques/T1595/) 
 
-Escaneamos la red en la que se encuentra el servidor para obtener su ip.
+Escaneamos la red en la que se encuentra el servidor para obtener su **ip**.
 ```bash
 nmap -sn 10.1.0.1/28
 Starting Nmap 7.92 ( https://nmap.org ) at 2026-08-05 17:41 CEST
@@ -49,9 +49,13 @@ Service Info: OS: Linux; CPE: cpe:/o:linux:linux_kernel
 Service detection performed. Please report any incorrect results at https://nmap.org/submit/ 
 
 ```
-
+Obtenemos del escaneo dos servicios expuestos:
+- Un **servidor nginx** que sirve desde el puerto 5042.
+- Un **servidor ssh** expuesto en el puerto 6060.
 
 ### Fingerprinting
+
+Obtenemos información del servidor mediante una petición **curl**.
 
 ```bash
 curl 10.1.0.8:5042 -I
@@ -67,7 +71,16 @@ X-Eval-Backend: hal9042d:7042
 
 ```
 
+
+#### Documentación relacionada
+
+- **[Referencia en OWASP - Fingerprinting](https://owasp.github.io/www-project-automated-threats-to-web-applications/assets/oats/EN/OAT-004_Fingerprinting)**
+
+- **[CAPEC-541: Application Fingerprinting](https://capec.mitre.org/data/definitions/541.html)**
+
+
 ### Webserver metafiles
+Leemos el archivo `robots.txt`.
 
 ```bash
 curl 10.1.0.8:5042/robots.txt
@@ -85,6 +98,11 @@ Disallow: /definitely_not_a_trap
 Disallow: /secret_backup_DO_NOT_READ
 # HAL9042 reminds you: curiosity is logged. (it is always logged.)
 ```
+
+Todos los ficheros y endpoints son decoys excepto **/api/debug**, **/beta** y **/api/internal/**.
+
+#### Documentación relacionada
+- **[OTG-INFO-003: Review Webserver Metafiles for Information Leakage]()
 
 ### Fuzzing
 
@@ -244,7 +262,7 @@ http://10.1.0.8:5042/appeal
 
 ```
 
-## Lo de .git
+## Exfiltración de .git
 
 El servidor deja un repositorio **git** expuesto, lo recuperamos.
 ```bash

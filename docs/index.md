@@ -3,7 +3,7 @@
 
 Memoria para el proyecto de pentesting de la rama de ciberseguridad del OuterCore de 42.
 Se detallan los pasos seguidos para conseguir root en un servidor en `caja negra`, vinculándolos con los frameworks de 
-**[MITRE Att&ck](https://attack.mitre.org/)** y **OWASP**.
+**[MITRE Att&ck](https://attack.mitre.org/)** y **[OWASP](https://owasp.org/projects/web-security-testing-guide)**.
 
 ### Tabla de contenidos
 

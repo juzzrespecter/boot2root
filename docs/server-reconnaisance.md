@@ -219,14 +219,11 @@ para obtener terminal en ol desde ssh.
 
 ```
 AUTH_KEYS=$(cat /tmp/sophie.auth_keys)
-ID_RSA=$(cat /tmp/sophie.id_rsa)
 
 mkdir -p ~/.ssh && chmod 700 ~/.ssh
 echo $AUTH_KEYS > ~/.ssh/authorized_keys
-echo $ID_RSA > ~/.ssh/id_rsa
 
-chmod 600 ~/.ssh/authorized_keys ~/.ssh/id_rsa
-chmod 600 ~/.ssh/id_rsa
+chmod 600 ~/.ssh/authorized_keys
 ```
 
 ### SOPHIE

