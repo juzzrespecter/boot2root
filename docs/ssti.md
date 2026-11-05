@@ -60,12 +60,15 @@ nc $IP_ADDR 4443`.
 ### Mitigaciones
 
 - [M1042 - Disable or Remove Feature or Program](https://attack.mitre.org/mitigations/M1042/)
+
 Eliminado (o restricción de acceso) de endpoints y códigos de debug innecesarios.
+
 - [https://cwe.mitre.org/data/definitions/1336.html](https://cwe.mitre.org/data/definitions/1336.html)
+
 En las posibles mitigaciones en la documentación de la vulnerabilidad se nos indica el uso de un motor de plantillas que restringa el input de usuario, o que se ejecute en modo **sandbox** para no acceder a información del sistema.
 
 ### Fuentes
 
-- https://onsecurity.io/article/server-side-template-injection-with-jinja2/
-- https://cwe.mitre.org/data/definitions/489.html
-- https://cwe.mitre.org/data/definitions/1336.html
+- [https://onsecurity.io/article/server-side-template-injection-with-jinja2/](https://onsecurity.io/article/server-side-template-injection-with-jinja2/)
+- [https://cwe.mitre.org/data/definitions/489.html](https://cwe.mitre.org/data/definitions/489.html)
+- [https://cwe.mitre.org/data/definitions/1336.html](https://cwe.mitre.org/data/definitions/1336.html)

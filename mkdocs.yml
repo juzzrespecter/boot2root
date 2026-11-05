@@ -4,7 +4,7 @@ nav:
   - Reconnaisance: reconnaisance.md
   - 'Exploit: LFI - RCE': rce.md
   - 'Exploit: SSTI': ssti.md
-  - Servidor: server-reconnaisance.md
+  - Servidor: server-discovery.md
   - Bonus: bonus.md
 
 theme:

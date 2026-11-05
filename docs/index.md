@@ -10,5 +10,5 @@ Se detallan los pasos seguidos para conseguir root en un servidor en `caja negra
  - [Reconocimiento externo & web](./reconnaisance.md)
  - **[Getting a shell: LFI - RCE](./rce.md)**
  - **[Getting a shell: Semiblind SSTI](./ssti.md)**
- - [Reconocimiento interno & becoming root](./server-reconnaisance.md)
+ - [Reconocimiento interno & becoming root](./server-discovery.md)
  - [Bonus](./bonus.md)

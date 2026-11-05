@@ -257,14 +257,7 @@ curl -v 10.1.0.8:5042/api/internal/schema
 
 #### Documentación relacionada
 
-- Tactica - tecnicas - vulnerabilidades y herramientas - mitigaciones
-
-**Técnicas**
-- [T1595.003 Wordlist Scanning]()
-
-**Mitigaciones**
-- 
-
+**Técnicas** - [T1595.003 Wordlist Scanning]()
 
 
 ### Exfiltración de .git
