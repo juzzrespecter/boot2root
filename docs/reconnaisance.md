@@ -1,7 +1,6 @@
 # Reconnaisance
-### [Host Discovery - T1595  Active Scanning](https://attack.mitre.org/techniques/T1595/) 
-
-Escaneamos la red en la que se encuentra el servidor para obtener su **ip**.
+### Escaneo de red
+[Escaneamos la red](https://attack.mitre.org/techniques/T1595/) en la que se encuentra el servidor para obtener su **ip**.
 ```bash
 nmap -sn 10.1.0.1/28
 Starting Nmap 7.92 ( https://nmap.org ) at 2026-08-05 17:41 CEST
@@ -50,12 +49,20 @@ Service detection performed. Please report any incorrect results at https://nmap
 
 ```
 Obtenemos del escaneo dos servicios expuestos:
+
 - Un **servidor nginx** que sirve desde el puerto 5042.
+
 - Un **servidor ssh** expuesto en el puerto 6060.
+
+#### Documentación relacionada
+
+**Técnicas usadas**
+- [T1595.001 Scanning IP Blocks]()
 
 ### Fingerprinting
 
 Obtenemos información del servidor mediante una petición **curl**.
+Con una petición **curl** podemos identificar el tipo de software usado como servidor y su **versión** para poder apuntar a análisis de su arquitectura y posibles exploits.
 
 ```bash
 curl 10.1.0.8:5042 -I
@@ -70,9 +77,16 @@ X-HAL9042-Env: development
 X-Eval-Backend: hal9042d:7042
 
 ```
-
+Identificamos el proxy como **nginx** en su versión **1.24.0**, con tres cabeceras custom que nos indica que el backend está servido por una aplicación Flask y su entorno es el de desarrollo.
 
 #### Documentación relacionada
+**Mitigaciones**
+
+- [M1056 - Pre-compromise](https://attack.mitre.org/mitigations/M1056/), prevención de identificación de componentes durante la fase de reconocimiento. 
+
+Para un servidor de nginx, podemos servirnos de los campos de configuración **server_tokens: off** para eliminar el versionado y **more_clear_headers** para eliminar o sobreescribir la cabecera Server.
+
+**Técnicas usadas**
 
 - **[Referencia en OWASP - Fingerprinting](https://owasp.github.io/www-project-automated-threats-to-web-applications/assets/oats/EN/OAT-004_Fingerprinting)**
 
@@ -99,13 +113,17 @@ Disallow: /secret_backup_DO_NOT_READ
 # HAL9042 reminds you: curiosity is logged. (it is always logged.)
 ```
 
-Todos los ficheros y endpoints son decoys excepto **/api/debug**, **/beta** y **/api/internal/**.
+Todos los ficheros y endpoints son decoys excepto **/api/debug**, **/static/js/debug.js**, **/beta** y **/api/internal/**.
 
 #### Documentación relacionada
-- **[OTG-INFO-003: Review Webserver Metafiles for Information Leakage]()
+- **[OTG-INFO-003: Review Webserver Metafiles for Information Leakage](https://github.com/OWASP/www-project-web-security-testing-guide/blob/master/v41/4-Web_Application_Security_Testing/01-Information_Gathering/03-Review_Webserver_Metafiles_for_Information_Leakage.md)**
+
+**Vulnerabilidades**
+- [CWE-538: Insertion of Sensitive Information into Externally-Accessible File or Directory](https://cwe.mitre.org/data/definitions/538.html)
 
 ### Fuzzing
 
+Escaneamos con wordlists el root de la web para descubrir posibles directorios.
 
 ```bash
 root@ee0039bcd358:/opt/gobuster# ./gobuster dir -w /usr/share/wordlists/dirb/big.txt -u http://10.1.0.8:5042/ -r  -x php,txt  -t 4
@@ -144,6 +162,8 @@ Finished
 ===============================================================
 ```
 
+Nos retorna la existencia de los ficheros y endpoints ya mostrados en la lectura del robots.txt.
+
 ```bash
 root@ee0039bcd358:/opt/gobuster# ./gobuster dir -w /usr/share/wordlists/dirb/big.txt -u http://10.1.0.8:5042/beta -r  -x php,txt  -t 4
 ===============================================================
@@ -169,9 +189,7 @@ Finished
 ===============================================================
 ```
 
-/api/ solo nos retorna debug.
-
-Vemos el 500:
+Tenemos un endpoint **/beta/evaluate** que nos devuelve un error 500, lanzamos una petición para obtener más detalles.
 ```bash
  curl -v 10.1.0.8:5042/beta/evaluate
 *   Trying 10.1.0.8:5042...
@@ -206,7 +224,10 @@ Internal paths: /var/www/hal9042 , /opt/hal9042/ , /var/log/hal9042/
 ```
 
 Tenemos un error sin controlar desde la aplicación, un traceback que nos desvela el directorio en donde se encuentra la aplicación en el servidor,
-otra nueva ruta y un servicio interno `127.0.0.1:7042` (al cual no tenemos acceso desde el exterior). (X-Eval-Backend)
+otra nueva ruta y un servicio interno `127.0.0.1:7042` (al cual no tenemos acceso desde el exterior).
+El apartado de internal paths también nos da información interesante sobre dónde se encuentran los ficheros del servidor web (lo que nos puede ayudar a exfiltrar ficheros de configuración con un **lfi**).
+
+Exploramos el endpoint que nos trae el error.
 
 ```bash
 curl -v 10.1.0.8:5042/api/internal/schema
@@ -234,42 +255,25 @@ curl -v 10.1.0.8:5042/api/internal/schema
 * Connection #0 to host 10.1.0.8 left intact
 ```
 
-Crawling:
+#### Documentación relacionada
 
-```bash 
-root@15485da21b1b:/opt/gobuster# katana -u http://10.1.0.8:5042 -jc
+- Tactica - tecnicas - vulnerabilidades y herramientas - mitigaciones
 
-   __        __
-  / /_____ _/ /____ ____  ___ _
- /  '_/ _  / __/ _  / _ \/ _  /
-/_/\_\\_,_/\__/\_,_/_//_/\_,_/
+**Técnicas**
+- [T1595.003 Wordlist Scanning]()
 
-                projectdiscovery.io
+**Mitigaciones**
+- 
 
-[INF] Current katana version v1.7.0 (latest)
-[INF] Started standard crawling for => http://10.1.0.8:5042
-http://10.1.0.8:5042
-http://10.1.0.8:5042/static/js/main.js
-http://10.1.0.8:5042/static/js/glitch.js
-http://10.1.0.8:5042/about
-http://10.1.0.8:5042/static/css/glitch.css
-http://10.1.0.8:5042/appeals
-http://10.1.0.8:5042/status
-http://10.1.0.8:5042/feed
-http://10.1.0.8:5042/evaluate
-http://10.1.0.8:5042/appeal
-[INF] Crawl completed in 12s. 10 endpoints found.
 
-```
 
-## Exfiltración de .git
+### Exfiltración de .git
 
 El servidor deja un repositorio **git** expuesto, lo recuperamos.
 ```bash
 
  wget -r -np -nH --cut-dirs=1 http://10.1.0.8:5042/.git/
 ```
-
 
 `git status` nos muestra que el repositorio ha sido limpiado pero no se han commiteado los cambios, así que recuperamos el proyecto con `git restore`.
 
@@ -300,6 +304,11 @@ ENV = "development"
 ```
 
 La variable `ADMIN_TOKEN` nos servirá para obtener shell como `www-data` a través de **LFI -> RCE**.
+
+#### Documentación relacionada
+
+**Vulnerabilidades**
+- [CWE-527: Exposure of Version-Control Repository to an Unauthorized Control Sphere](https://cwe.mitre.org/data/definitions/527.html)
 
 ## Primera ruta - LFI -> RCE
 

